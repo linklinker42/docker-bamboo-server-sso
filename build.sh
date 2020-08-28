@@ -1,1 +1,1 @@
-docker build -t bamboo-server-sso --build-arg BAMBOO_VERSION=7.0.4 .
+docker build -t bamboo-server-sso --build-arg BAMBOO_VERSION=7.1.1 .

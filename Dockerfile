@@ -1,4 +1,6 @@
-FROM adoptopenjdk:8-jdk-hotspot-bionic
+#FROM registry.cloudbrocktec.com/redhat/ubi/ubi8
+FROM localhost/redhat/ubi/ubi8:8.2
+#FROM adoptopenjdk:8-jdk-hotspot-bionic
 LABEL maintainer="Atlassian Bamboo Team" \
      description="Official Bamboo Server Docker Image"
 
@@ -18,18 +20,20 @@ EXPOSE 8085
 EXPOSE $BAMBOO_JMS_CONNECTION_PORT
 
 RUN set -x && \
-     addgroup ${BAMBOO_GROUP} && \
-     adduser ${BAMBOO_USER} --home ${BAMBOO_USER_HOME} --ingroup ${BAMBOO_GROUP} --disabled-password
+     groupadd ${BAMBOO_GROUP} && \
+     adduser ${BAMBOO_USER} --home ${BAMBOO_USER_HOME} -g ${BAMBOO_GROUP}
+	 #usermod -g ${BAMBOO_GROUP} ${BAMBOO_USER}
 
 RUN set -x && \
-     apt-get update && \
-     apt-get install -y --no-install-recommends \
+     yum update -y && \
+	 yum install -y \
+	 java-1.8.0-openjdk-devel.x86_64 \
      curl \
      git \
      bash \
      procps \
      openssl \
-     openssh-client \
+     openssh-clients \
      libtcnative-1 \
      maven \
      python3 python3-jinja2 \
@@ -39,8 +43,29 @@ RUN set -x && \
      ln -s /usr/share/maven /usr/share/maven3 && \
      # create symlink for java home backward compatibility
      mkdir -m 755 -p /usr/lib/jvm && \
-     ln -s "${JAVA_HOME}" /usr/lib/jvm/java-8-openjdk-amd64 && \
+     ln -s "${JAVA_HOME}" /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.262.b10-0.el8_2.x86_64/jre && \
      rm -rf /var/lib/apt/lists/*
+
+#RUN set -x && \
+#     apt-get update && \
+#     apt-get install -y --no-install-recommends \
+#     curl \
+#     git \
+#     bash \
+#     procps \
+#     openssl \
+#     openssh-client \
+#     libtcnative-1 \
+#     maven \
+#     python3 python3-jinja2 \
+#     xmlstarlet \
+#     && \
+#     # create symlink to maven to automate capability detection
+#     ln -s /usr/share/maven /usr/share/maven3 && \
+#     # create symlink for java home backward compatibility
+#     mkdir -m 755 -p /usr/lib/jvm && \
+#     ln -s "${JAVA_HOME}" /usr/lib/jvm/java-8-openjdk-amd64 && \
+#     rm -rf /var/lib/apt/lists/*
 
 ARG BAMBOO_VERSION
 ARG DOWNLOAD_URL=https://www.atlassian.com/software/bamboo/downloads/binary/atlassian-bamboo-${BAMBOO_VERSION}.tar.gz
